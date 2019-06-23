@@ -15,8 +15,11 @@
               <el-input v-model="form.code" placeholder="验证码"></el-input>
             </el-col>
             <el-col :span="10" :offset="2">
-              <el-button @click="handleSendCode" :disabled="clickcode"> <span v-if ="timeend === 60">点击获取验证码</span><span v-else> {{timeend}}秒后重新发送</span> </el-button>
+              <el-button @click="handleClickCode" :disabled="clickcode||loadCode"> <span v-if ="timeend === 60">点击获取验证码</span><span v-else> {{timeend}}秒后重新发送</span> </el-button>
             </el-col>
+          </el-form-item>
+          <el-form-item prop="agree">
+            <el-checkbox v-model="form.agree">同意协议</el-checkbox>
           </el-form-item>
           <el-form-item>
             <!-- 给组件加 class，会作用到它的根元素 -->
@@ -38,7 +41,8 @@ export default {
       timeend: 60,
       form: {
         mobile: '15120013810',
-        code: ''
+        code: '',
+        agree: ''
       },
       captchaObj: null,
       rules: { // 表单验证规则
@@ -49,9 +53,15 @@ export default {
         code: [
           { required: true, message: '请输入验证码', trigger: 'blur' },
           { len: 6, message: '长度必须为6个字符', trigger: 'blur' }
+        ],
+        agree: [
+          { required: true, message: '未同意协议', trigger: 'change' },
+          { pattern: /true/, message: '未同意协议', trigger: 'change' }
         ]
       },
-      loginLoading: false // 登录按钮的 loading 状态
+      loginLoading: false, // 登录按钮的 loading 状态
+      loadCode: false,
+      oldMobil: ''
     }
   },
   methods: {
@@ -78,6 +88,7 @@ export default {
           message: '登录成功',
           type: 'success'
         })
+        window.localStorage.setItem('user_info', JSON.stringify(res.data.data))
         this.loginLoading = false
         // 建议路由跳转都使用 name 去跳转，路由传参非常方便
         this.$router.push({
@@ -86,18 +97,36 @@ export default {
       }).catch(err => { // >= 400 的 HTTP 状态码都会进入 catch 中
         if (err.response.status === 400) {
           this.$message.error('登录失败，手机号或验证码错误')
+        } else if (err.response.status === 403) {
+          this.$message.error('登录失败，手机号未注册')
         }
         this.loginLoading = false
       })
     },
+    handleClickCode () {
+      this.$refs['ruleForm'].validateField('mobile', errorMessage => {
+        if (errorMessage.trim().length > 0) {
+          return
+        }
+        if (this.captchaObj) {
+          if (this.form.mobile !== this.oldMobil) {
+            document.body.removeChild(document.querySelector('.geetest_panel'))
+            // 重新初始化
+            this.handleSendCode()
+          } else {
+            // 一致，直接 verify
+            this.captchaObj.verify()
+          }
+        } else {
+          this.handleSendCode()
+        }
+      })
+    },
     handleSendCode () {
-      let mobile = this.form.mobile
-      if (this.captchaObj) {
-        return this.captchaObj.verify()
-      }
+      this.loadCode = true
       axios({
         method: 'GET',
-        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${mobile}`
+        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${this.form.mobile}`
       }).then(res => {
         let data = res.data.data
         window.initGeetest({
@@ -109,8 +138,10 @@ export default {
         }, (captchaObj) => {
           this.captchaObj = captchaObj
           // 这里可以调用验证实例 captchaObj 的实例方法
-          captchaObj.onReady(function () {
+          captchaObj.onReady(() => {
             // 只有 ready 了才能显示验证码
+            this.oldMobil = this.form.mobile
+            this.loadCode = false
             captchaObj.verify()
           }).onSuccess(() => {
             let flag = window.setInterval(() => {
@@ -131,7 +162,7 @@ export default {
             // 调用 获取短信验证码 (极验 API2）接口，发送短信
             axios({
               method: 'GET',
-              url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
+              url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${this.form.mobile}`,
               params: { // 专门用来传递 query 查询字符串参数
                 challenge,
                 seccode,
@@ -154,7 +185,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ccc;
+  background: url('./login_bg.jpg');
   .login-head {
     display: flex;
     justify-content: center;
