@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import nprogress from 'nprogress'
 
 Vue.use(Router)
 
@@ -17,7 +18,13 @@ const router = new Router({
         {
           name: 'publish',
           path: '/publish',
+          // shhshs
           component: () => import('@/views/publish')
+        },
+        {
+          name: 'article',
+          path: '/article',
+          component: () => import('@/views/article')
         }
       ]
     },
@@ -29,27 +36,23 @@ const router = new Router({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  const userInfo = window.localStorage.getItem('user_info')
-
-  // 如果是非 /login 页面，判断其登录状态
+router.beforeEach((to, path, next) => {
+  nprogress.start()
+  const userInfo = JSON.parse(window.localStorage.getItem('user_info'))
   if (to.path !== '/login') {
-    // 如果没有登录，让其跳转到登录页
-    if (!userInfo) {
-      next({ name: 'login' })
-    } else {
-      // 如果登录了，则允许通过
+    if (userInfo) {
       next()
+    } else {
+      next({ name: 'login' })
     }
   } else {
-    // 如果登录了，就不允许访问登录页了
     if (userInfo) {
-      next(false)
-    } else {
-      // 没有登录，才允许访问登录页
-      next()
+      return next(false)
     }
+    next()
   }
 })
-
+router.afterEach((to, from) => {
+  nprogress.done()
+})
 export default router

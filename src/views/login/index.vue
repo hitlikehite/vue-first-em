@@ -19,7 +19,7 @@
             </el-col>
           </el-form-item>
           <el-form-item prop="agree">
-            <el-checkbox v-model="form.agree">同意协议</el-checkbox>
+            <el-checkbox v-model="form.agree">我已阅读并同意<a href="#">用户协议</a>和<a href="#">隐私条款</a></el-checkbox>
           </el-form-item>
           <el-form-item>
             <!-- 给组件加 class，会作用到它的根元素 -->
@@ -80,15 +80,15 @@ export default {
       this.loginLoading = true
       axios({
         method: 'POST',
-        url: 'http://ttapi.research.itcast.cn/mp/v1_0/authorizations',
+        url: '/authorizations',
         data: this.form
-      }).then(res => { // >= 200 && < 400 的状态码都会进入这里
+      }).then(data => { // >= 200 && < 400 的状态码都会进入这里
         // Element 提供的 Message 消息提示组件，这也是组件调用的一种形式
+        window.localStorage.setItem('user_info', JSON.stringify(data))
         this.$message({
           message: '登录成功',
           type: 'success'
         })
-        window.localStorage.setItem('user_info', JSON.stringify(res.data.data))
         this.loginLoading = false
         // 建议路由跳转都使用 name 去跳转，路由传参非常方便
         this.$router.push({
@@ -103,6 +103,7 @@ export default {
         this.loginLoading = false
       })
     },
+
     handleClickCode () {
       this.$refs['ruleForm'].validateField('mobile', errorMessage => {
         if (errorMessage.trim().length > 0) {
@@ -122,17 +123,18 @@ export default {
         }
       })
     },
+
     handleSendCode () {
       this.loadCode = true
       axios({
         method: 'GET',
-        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${this.form.mobile}`
-      }).then(res => {
-        let data = res.data.data
+        url: `/captchas/${this.form.mobile}`
+      }).then(data => {
+        console.log(data)
         window.initGeetest({
           gt: data.gt,
           challenge: data.challenge,
-          offline: !data.success,
+          // offline: !data.success,
           new_captcha: data.new_captcha,
           product: 'bind' // 隐藏，直接弹出式
         }, (captchaObj) => {
@@ -144,15 +146,6 @@ export default {
             this.loadCode = false
             captchaObj.verify()
           }).onSuccess(() => {
-            let flag = window.setInterval(() => {
-              this.clickcode = true
-              this.timeend--
-              if (this.timeend <= 0) {
-                this.timeend = 60
-                this.clickcode = false
-                window.clearInterval(flag)
-              }
-            }, 1000)
             const {
               geetest_challenge: challenge,
               geetest_seccode: seccode,
@@ -162,14 +155,23 @@ export default {
             // 调用 获取短信验证码 (极验 API2）接口，发送短信
             axios({
               method: 'GET',
-              url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${this.form.mobile}`,
+              url: `/sms/codes/${this.form.mobile}`,
               params: { // 专门用来传递 query 查询字符串参数
                 challenge,
                 seccode,
                 validate
               }
             }).then(res => {
-              console.log(res.data)
+              console.log(res)
+              this.clickcode = true
+              let flag = window.setInterval(() => {
+                this.timeend--
+                if (this.timeend <= 0) {
+                  this.timeend = 60
+                  this.clickcode = false
+                  window.clearInterval(flag)
+                }
+              }, 1000)
             })
           })
         })

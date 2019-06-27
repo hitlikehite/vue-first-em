@@ -35,13 +35,13 @@ export default {
   height: 100%;
   display: flex;
   .el-container {
+    background-color: #999;
     height: 100%;
     .el-aside {
       height: 100%;
-      background-color: #f00;
     }
     .el-header {
-      background-color: #0ff;
+      background-color: #FFF;
     }
   }
 }
