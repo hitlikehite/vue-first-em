@@ -64,7 +64,9 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination background layout="prev, pager, next" :total="totalCount" @current-change="handleCurrentChange" :disabled="articleLoading">
+      <!-- total为数据的总条数    current-page为数据绑定时的页面数 -->
+      <el-pagination background layout="prev, pager, next" :total="totalCount" @current-change="handleCurrentChange" :disabled="articleLoading"
+      :current-page="page">
       </el-pagination>
     </el-card>
 
@@ -108,6 +110,7 @@ export default {
         status: '', // 文章状态
         channel_id: ''// 文章频道
       },
+      page: 1,
       value1: ''// 搜索时间的数据无实际用途，但没有不会有change事件触发
     }
   },
@@ -156,6 +159,7 @@ export default {
     },
 
     handleCurrentChange (page) { // 点击分页按钮触发的数据
+      this.page = page
       this.articleLoading = true
       this.handleArticle(page)
     },

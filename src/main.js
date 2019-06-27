@@ -9,8 +9,8 @@ import 'nprogress/nprogress.css'
 import JSONbig from 'json-bigint'
 
 Vue.use(ElementUI)
-// axios.defaults.baseURL = 'http://toutiao.course.itcast.cn/mp/v1_0/'
-axios.defaults.baseURL = 'http://ttapi.research.itcast.cn/mp/v1_0/'
+axios.defaults.baseURL = 'http://toutiao.course.itcast.cn/mp/v1_0/'
+// axios.defaults.baseURL = 'http://ttapi.research.itcast.cn/mp/v1_0/'
 
 axios.defaults.transformResponse = [function (data) {
   // data 是未经处理的后端响应数据：JSON 格式字符串
