@@ -15,11 +15,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="频道">
-          <!-- 动态绑定数据中的filterParams.channel_id值 value为选中时给的值 -->
-          <el-select v-model="filterParams.channel_id" placeholder="频道">
-            <el-option label="全部" value=""></el-option>
-            <el-option :label="item.name" :value="item.id" v-for="item in Channels" :key="item.id"></el-option>
-          </el-select>
+          <article-channel v-model="filterParams.channel_id"></article-channel>
         </el-form-item>
         <el-form-item label="时间">
           <div class="block">
@@ -60,7 +56,7 @@
         </el-table-column>
         <el-table-column  label="操作">
           <template slot-scope="scope">
-            <el-button>编辑</el-button><el-button @click="handleDelete(scope.row.id)">删除</el-button>
+            <el-button @click="$router.push(`/publish/${scope.row.id}`)">编辑</el-button><el-button @click="handleDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -74,8 +70,12 @@
 </template>
 
 <script>
+import articleChannel from '@/components/article-channel'
 export default {
   name: 'ArticleList',
+  components: {
+    articleChannel
+  },
   data () {
     return {
       articlelist: [], // 文章列表的数据
@@ -103,7 +103,6 @@ export default {
           label: '已删除'
         }
       ],
-      Channels: [], // 所有频道
       filterParams: { // 查询加载文章列表的数组
         begin_pubdate: '', // 查询开始时间
         end_pubdate: '', // 查询结束时间
@@ -117,7 +116,6 @@ export default {
   created () {
     this.articleLoading = true// 禁用按钮
     this.handleArticle()// 文章加载
-    this.loadChannels()// 获取频道数据
   },
   methods: {
     onSubmitSearch () { // 搜索按钮点击事件
@@ -132,7 +130,6 @@ export default {
           shuju[key] = this.filterParams[key]
         }
       }
-      console.log(shuju)
       this.$http({
         method: 'GET',
         url: '/articles',
@@ -141,7 +138,6 @@ export default {
           ...shuju
         }
       }).then((res) => {
-        console.log(res)
         this.articlelist = res.results
         this.totalCount = res.total_count// 控制页面显示的总条数
         this.articleLoading = false
@@ -149,7 +145,6 @@ export default {
     },
 
     handleDelete (id) { // 删除数据
-      console.log(id)
       this.$http({
         method: 'DELETE',
         url: `/articles/${id}`
@@ -164,20 +159,8 @@ export default {
       this.handleArticle(page)
     },
 
-    // 获取频道列表
-    loadChannels () { // 获取频道总个数
-      this.$http({
-        method: 'get',
-        url: '/channels'
-      }).then(data => {
-        console.log(data)
-        this.Channels = data.channels
-      })
-    },
-
     // 时间改变触发的函数 参数为选择的时间
     handleDateChange (data) {
-      // console.log(data)
       this.filterParams.begin_pubdate = data[0]
       this.filterParams.end_pubdate = data[1]
     }

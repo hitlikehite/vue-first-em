@@ -100,7 +100,6 @@ export default {
         } else if (err.response.status === 403) {
           this.$message.error('登录失败，手机号未注册')
         }
-        this.loginLoading = false
       })
     },
 
@@ -130,7 +129,6 @@ export default {
         method: 'GET',
         url: `/captchas/${this.form.mobile}`
       }).then(data => {
-        console.log(data)
         window.initGeetest({
           gt: data.gt,
           challenge: data.challenge,
@@ -162,7 +160,6 @@ export default {
                 validate
               }
             }).then(res => {
-              console.log(res)
               this.clickcode = true
               let flag = window.setInterval(() => {
                 this.timeend--
