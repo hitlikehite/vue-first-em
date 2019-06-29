@@ -1,76 +1,84 @@
 <template>
-  <el-card>
-    <div slot="header">
-      <span>评论管理</span>
-    </div>
-    <el-table :data="articles">
-      <el-table-column prop="title" label="标题"></el-table-column>
-      <el-table-column prop="total_comment_count" label="总评论数"></el-table-column>
-      <el-table-column prop="fans_comment_count" label="评论粉丝数"></el-table-column>
-      <el-table-column label="允许评论">
+<el-card class="box-card">
+  <div slot="header" class="clearfix">
+    <span>评论管理</span>
+  </div>
+      <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column
+        prop="title"
+        label="标题"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="total_comment_count"
+        label="总评论数"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="fans_comment_count"
+        label="评论粉丝数">
+      </el-table-column>
+      <el-table-column
+        label="评论状态">
         <template slot-scope="scope">
-          <el-switch
-            :disabled="scope.row.changeLoading"
-            v-model="scope.row.comment_status"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            @change="handleChangeCommentStatus(scope.row)">
-          </el-switch>
+        <el-switch
+          :disabled="scope.row.loaddelable"
+          v-model="scope.row.comment_status"
+          active-color="#13ce66"
+          inactive-color="#ff4949"
+          @change="amendStatus(scope.row)">
+        </el-switch>
         </template>
       </el-table-column>
     </el-table>
-  </el-card>
+</el-card>
 </template>
 
 <script>
 export default {
-  name: 'ArticleComment',
+  name: 'comment',
   data () {
     return {
-      articles: []
+      tableData: []
     }
   },
   created () {
-    this.loadArticles()
+    this.loadDataP()
   },
   methods: {
-    loadArticles () {
+    loadDataP () {
       this.$http({
         method: 'GET',
         url: '/articles',
-        params: {
-          response_type: 'comment'
-        }
+        params: { response_type: 'comment' }
       }).then(data => {
         data.results.forEach(item => {
-          item.changeLoading = false
+          item.loaddelable = false
         })
-        this.articles = data.results
+        this.tableData = data.results
       })
     },
-
-    handleChangeCommentStatus (item) {
-      item.changeLoading = true // 禁用开关的点击状态
+    amendStatus (item) {
+      item.loaddelable = true
+      console.log(item.loaddelable)
       this.$http({
         method: 'PUT',
-        url: '/comments/status',
-        params: {
-          article_id: item.id.toString()
-        },
-        data: {
-          allow_comment: item.comment_status
-        }
+        url: 'comments/status',
+        params: { article_id: item.id.toString() },
+        data: { allow_comment: item.comment_status }
       }).then(() => {
+        item.loaddelable = false
         this.$message({
           type: 'success',
-          message: `${item.comment_status ? '启用' : '关闭'}评论状态成功`
+          message: '修改成功'
         })
-        item.changeLoading = false // 启用开关的点击状态
-      }).catch(err => {
-        console.log(err)
-        item.changeLoading = false // 启用开关的点击状态
+      }).catch(error => {
+        console.log(error)
+        this.$message.error('修改失败')
         item.comment_status = !item.comment_status
-        this.$message.error('修改评论状态失败')
+        item.loaddelable = false
       })
     }
   }

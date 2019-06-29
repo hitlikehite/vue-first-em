@@ -59,8 +59,7 @@ export default {
       },
       editorOption: {
         // some quill options
-      },
-      isEdit: false
+      }
     }
   },
   created () {
@@ -126,6 +125,9 @@ export default {
   computed: {
     editor () {
       return this.$refs.myQuillEditor.quill
+    },
+    isEdit () {
+      return this.$route.name === 'publish-edit'
     }
   },
   mounted () {
