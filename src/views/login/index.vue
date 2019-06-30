@@ -85,6 +85,7 @@ export default {
       }).then(data => { // >= 200 && < 400 的状态码都会进入这里
         // Element 提供的 Message 消息提示组件，这也是组件调用的一种形式
         window.localStorage.setItem('user_info', JSON.stringify(data))
+        this.$store.commit('storageLogin', data)
         this.$message({
           message: '登录成功',
           type: 'success'

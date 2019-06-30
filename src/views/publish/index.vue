@@ -58,22 +58,34 @@ export default {
         }
       },
       editorOption: {
-        // some quill options
       }
     }
   },
   created () {
     this.editarticle()
   },
+  watch: {
+    $route (to, from) {
+      // 如果你是从更新页面来的
+      if (from.name === 'publish-edit') {
+        this.form = {
+          title: '', // 标题
+          content: '', // 内容
+          cover: { // 封面
+            type: 0, // 封面类型 -1:自动，0-无图，1-1张，3-3张
+            images: [] // 图片链接
+          },
+          channel_id: '' // 频道
+        }
+      }
+    }
+  },
   methods: {
     onEditorBlur (quill) {
-      console.log('editor blur!', quill)
     },
     onEditorFocus (quill) {
-      console.log('editor focus!', quill)
     },
     onEditorReady (quill) {
-      console.log('editor ready!', quill)
     },
     sendarticle (draft) {
       this.$http({
@@ -111,7 +123,6 @@ export default {
     editarticle () {
       console.log(this.$route.params.id)
       if (this.$route.params.id) {
-        this.isEdit = true
         this.$http({
           method: 'GET',
           url: '/articles/' + this.$route.params.id

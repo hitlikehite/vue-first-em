@@ -28,16 +28,6 @@
         </el-form>
     </el-col>
     <el-col :span="4" :offset="2">
-      <!-- <el-upload
-        class="avatar-uploader"
-        action="/"
-        :show-file-list="false"
-        :on-success="handleAvatarSuccess"
-        :http-request="handsend"
-        :before-upload="beforeAvatarUpload">
-        <img v-if="imageUrl" :src="imageUrl" class="avatar">
-        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-      </el-upload> -->
       <el-upload
   class="avatar-uploader"
   action="/"
@@ -77,7 +67,7 @@ export default {
         url: '/user/profile',
         data: this.form
       }).then(data => {
-        // console.log(data)
+        this.$store.commit('updatePhoto', data)
         this.$message({
           type: 'success',
           message: '上传成功'
@@ -102,7 +92,6 @@ export default {
       return isJPG && isLt2M
     },
     handsend (a) {
-      // console.log(a)
       const formData = new FormData()
       formData.append('photo', a.file)
       this.$http({
@@ -111,6 +100,7 @@ export default {
         data: formData
       }).then(data => {
         this.imageUrl = data.photo
+        this.$store.commit('updatePhoto', data)
         this.$message({
           type: 'success',
           message: '上传成功'

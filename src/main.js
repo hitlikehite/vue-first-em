@@ -7,6 +7,7 @@ import './styles/index.less'
 import axios from 'axios'
 import 'nprogress/nprogress.css'
 import JSONbig from 'json-bigint'
+import store from './store'
 
 Vue.use(ElementUI)
 // axios.defaults.baseURL = 'http://toutiao.course.itcast.cn/mp/v1_0/'
@@ -57,5 +58,6 @@ Vue.prototype.$http = axios
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')
