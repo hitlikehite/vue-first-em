@@ -98,8 +98,9 @@ export default {
         data: { collect: !item.is_collected }
       }).then(data => {
         item.is_collected = data.collect
-        console.log(data)
-        if (this.radio1 === true && this.data.results.length === 1) {
+        // console.log(this.data.results.length)
+        if (this.radio1 === 'true' && this.data.results.length === 1) {
+          console.log(11111)
           this.catchImage(true, this.page - 1)
           return
         }

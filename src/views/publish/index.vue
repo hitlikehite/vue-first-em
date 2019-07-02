@@ -22,8 +22,25 @@
               </quill-editor>
             </el-form-item>
             <el-form-item label="封面">
-            </el-form-item>
-            <el-form-item label="频道">
+              <div>
+                <!-- 选项按钮 -->
+                <el-radio-group v-model="form.cover.type">
+                  <el-radio :label="1">单图</el-radio>
+                  <el-radio :label="3">三图</el-radio>
+                  <el-radio :label="0">无图</el-radio>
+                  <el-radio :label="-1">自动</el-radio>
+                </el-radio-group>
+              </div>
+              <!-- 图片组件 -->
+              <template v-if="form.cover.type > 0">
+                <el-row :gutter="40">
+                  <el-col :span="6" v-for="n in form.cover.type" :key="n">
+                    <upload-img v-model="form.cover.images[n-1]" ></upload-img>
+                  </el-col>
+                </el-row>
+              </template>
+            </el-form-item >
+            <el-form-item label="频道" class="statuspindao">
               <article-channel v-model="form.channel_id"></article-channel>
             </el-form-item>
           </el-form>
@@ -32,19 +49,20 @@
 </template>
 
 <script>
-// require styles
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 
 import { quillEditor } from 'vue-quill-editor'
 import articleChannel from '@/components/article-channel'
+import uploadImg from '@/views/publish/commponents'
 
 export default {
   name: 'AppPublish',
   components: {
     quillEditor,
-    articleChannel
+    articleChannel,
+    uploadImg
   },
   data () {
     return {
@@ -53,7 +71,7 @@ export default {
         content: '',
         channel_id: '',
         cover: {
-          type: 0,
+          type: 1,
           images: []
         }
       },
@@ -72,7 +90,7 @@ export default {
           title: '', // 标题
           content: '', // 内容
           cover: { // 封面
-            type: 0, // 封面类型 -1:自动，0-无图，1-1张，3-3张
+            type: 1, // 封面类型 -1:自动，0-无图，1-1张，3-3张
             images: [] // 图片链接
           },
           channel_id: '' // 频道
@@ -127,7 +145,6 @@ export default {
           method: 'GET',
           url: '/articles/' + this.$route.params.id
         }).then(data => {
-          // console.log(data)
           this.form = data
         })
       }
@@ -151,5 +168,8 @@ export default {
 .headerfabu {
   display: flex;
   justify-content: space-between;
+}
+.statuspindao {
+  margin-top: 30px;
 }
 </style>
